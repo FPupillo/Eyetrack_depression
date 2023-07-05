@@ -1,0 +1,270 @@
+---
+title: "Analysis_Isabel"
+author: "Francesco Pupillo"
+date: "2023-07-05"
+output: 
+    md_document:
+     variant: markdown_github
+     toc: true
+     toc_depth: 6
+---
+
+# Analysis of the Data for Isabel
+
+```{r setup, include=FALSE}
+#------------------------------------------------------------------------------#
+# data for Isabel
+# It contains data from the encoding task and the eye tracker
+# 
+# created by Francesco Pupilo, Goethe University Frankfurt
+# "Tue Jul  4 16:56:11 2023"
+#------------------------------------------------------------------------------#
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Initialize packages and functions
+```{r, include=FALSE}
+rm(list=ls())
+# load packages
+library(dplyr)
+library(ggplot2)
+library(Rmisc)
+library(lme4)
+library(sjPlot)
+
+# set custom params for the plots
+custom_param<-function(){
+  # add personalized parmaeters
+  theme(
+    plot.title = element_text(size = 30),
+    axis.title.x = element_text(size = 28),
+    axis.title.y = element_text(size = 28),
+    axis.text=element_text(size=28),
+    legend.text=element_text(size=rel(2)),
+    legend.title = element_text(size=rel(2)), 
+    strip.text.x = element_text(size=28)
+  )+
+    theme(plot.title = element_text(hjust = 0.5))
+}
+
+```
+
+## Get the data 
+```{r}
+#------------------------------------------------------------------------------#
+# get the data from the two versions and merge them
+#------------------------------------------------------------------------------#
+ds<-list.files("data")
+
+version1<-read.csv(paste0('data/',ds[1]))
+version2<-read.csv(paste0('data/',ds[2]))
+
+# since we have two "participants two", delete the second one
+# also the number 50 (which is me)
+version1<-version1[version1$participant!=50 ,]
+
+version2<-version2[version2$participant!=02  ,]
+
+# before merging, check the variables of interest
+vars<-names(version2)[names(version2) %in% names(version1)]
+
+# delete the first that is just a "x'
+vars<-vars[-1]
+
+# subset these variables in the two versions
+version1<-version1[, vars]
+version2<-version2[, vars]
+
+# merge them 
+data_all<-rbind(version1, version2)
+
+# how many participants?
+participants<-unique(data_all$participant)
+
+# count them by age group
+count<-data_all %>%
+  group_by(participant, age_group) %>%
+  tally()
+
+# select only young adults
+data_all<-data_all[data_all$age_group=="YA",]
+```
+
+## ET data
+### prediction 
+```{r}
+#------------------------------------------------------------------------------#
+# have a look at the et data- 
+
+# select only participants for which we have the eyetracking  data
+sum_et<-data_all %>%
+  group_by(participant) %>%
+  dplyr::summarise(et = mean(fixation_error, na.rm = T))
+
+# which participants have the et data?
+part_incl<-sum_et$participant[!is.na(sum_et$et)]
+part_incl
+
+# subset
+all_data_et<-data_all[data_all$participant %in% part_incl,]
+
+# plot prediction - distance between where they look at and the most likely location
+
+# aggregated by trial type
+dat_summary_fix_type<- summarySEwithin(all_data_et,
+                                       measurevar = "fixation_prediction",
+                                       withinvars = c("type" ), 
+                                       betweenvars = "age_group",
+                                       idvar = "participant", 
+                                       na.rm = T)
+# plot
+ggplot(all_data_et %>%
+         group_by(participant,
+                  type)%>%
+         dplyr::summarise(fixation_prediction=mean(fixation_prediction, na.rm=T)), 
+       aes(x = type, y = fixation_prediction, colour = type ))+
+  geom_point(alpha = 0.10, colour = "black" )+
+  geom_line( aes(type, fixation_prediction,group = participant),
+             size=1, alpha=0.05, stat="summary" , colour = 'black')+
+  theme(axis.text.x = element_blank())+ # we are showing the different levels through the colors, so we can avoid naming the bars
+  geom_point(stat="summary", size = 5, data = dat_summary_fix_type)+
+  
+  geom_errorbar(aes( y = fixation_prediction, ymin = fixation_prediction - ci, 
+                     ymax = fixation_prediction + ci),
+                width = 0.40, size = 1,data=dat_summary_fix_type)+
+  
+  facet_wrap(.~age_group)+
+  custom_param()+
+  theme_classic()+
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank()) 
+```
+
+### Learning for the first 10 trials, by participant
+```{r}
+# look at learning only from the first 10 trials
+# by subject
+ggplot(all_data_et[all_data_et$trial_n_block<10 & all_data_et$type!='singletons',], # we do not want the singletons
+       aes(x = trial_n_block, y = fixation_prediction,
+           #colour = age_group, 
+           group = 1))+
+  stat_summary(fun.y="mean",geom="line", size = 1.5)+
+  #facet_wrap(participant~age_group)+
+  facet_wrap(participant~.)+
+  scale_x_continuous(breaks=seq(1, 100, 19))+
+  scale_color_manual(values = c(c( "#AA4499" ,"#44AA99","#332288")))+
+  theme_classic()+
+  ggtitle("Fixation prediction and age group")
+```
+### Learning for the first 10 trials: across participants
+```{r}
+ggplot(all_data_et[all_data_et$trial_n_block<10,], aes( x=trial_n_block, y=fixation_prediction))+
+  geom_line(stat="smooth",method = "lm", formula=y~x, alpha=0.5, se=F)+
+  aes(colour = factor(participant))+
+  geom_smooth(method="lm",formula=y~x, se=T, colour = "black" )+
+  theme(strip.text.x = element_text(size = 13))+
+  theme_classic()+
+  theme(panel.spacing = unit(1, "lines"))+
+  facet_wrap(.~age_group)+
+  #ggtitle("Experiment 2")+
+  theme(legend.position = "none")
+```
+
+### Include the questionnaires
+```{r}
+# add the questionnaires
+quest<-read.csv("Questionnaires.csv", sep = ";")
+
+# check distribution of BDI and SHAPS
+hist(quest$BDI_score)
+
+hist(quest$SHAPS_score)
+
+# attache the values to each participant
+# relevant variables
+rel_var<-c("BDI_score", "BDI_class", "SHAPS_score", "SHAPS_class")
+
+# initialize them in the dataframe
+for (var in rel_var){
+  
+  all_data_et[[var]]<-NA
+  
+}
+
+
+for ( n in 1:nrow(all_data_et)){
+  
+  # get the scores for current participant
+  curr_part<-quest[quest$ID == all_data_et$participant[n],]
+  
+  # if we have questionnaires data for that participant
+  if (nrow(curr_part)>0 ){
+  for (var in rel_var){
+    
+    all_data_et[[var]][n]<-curr_part[[var]]
+    
+  }
+  }
+
+}
+
+```
+
+### Plot the questionnaires by symptom severity
+```{r}
+ggplot(all_data_et[all_data_et$trial_n_block<10,], aes( x=trial_n_block, y=fixation_prediction))+
+  geom_line(stat="smooth",method = "lm", formula=y~x, alpha=0.5, se=F)+
+  aes(colour = factor(participant))+
+  geom_smooth(method="lm",formula=y~x, se=T, colour = "black" )+
+  theme(strip.text.x = element_text(size = 13))+
+  theme_classic()+
+  theme(panel.spacing = unit(1, "lines"))+
+  facet_wrap(.~BDI_class)+
+  #ggtitle("Experiment 2")+
+  theme(legend.position = "none")
+```
+
+### Analyze
+```{r}
+# -----------------------------------------------------------------------------#
+# center trial_n_block
+all_data_et$trial_n_block_c<-scale(all_data_et$trial_n_block, center = T)
+
+# analyze
+mod_BDI<-lmer(fixation_prediction~BDI_score*trial_n_block_c +
+                (1+trial_n_block_c|participant), 
+              data=all_data_et[all_data_et$trial_n_block<10,])
+
+tab_model(mod_BDI)
+
+# mod shaps
+mod_SHAPS<-lmer(fixation_prediction~SHAPS_score*trial_n_block_c +
+                (1+trial_n_block_c|participant), 
+              data=all_data_et[all_data_et$trial_n_block<10,])
+
+tab_model(mod_SHAPS)
+
+# categorical
+mod_BIDS_class<-lmer(fixation_prediction~BDI_class*trial_n_block_c +
+                  (1|participant), 
+                data=all_data_et[all_data_et$trial_n_block<10,])
+
+tab_model(mod_BIDS_class)
+(anova(mod_BIDS_class))
+
+
+
+mod_SHAPS_class<-lmer(fixation_prediction~SHAPS_class*trial_n_block_c +
+                       (1|participant), 
+                     data=all_data_et[all_data_et$trial_n_block<10,])
+
+tab_model(mod_SHAPS_class)
+anova(mod_SHAPS_class)
+```
+
+### Median Split
+```{r}
+
+```
+
