@@ -20,10 +20,20 @@ output:
 # "Tue Jul  4 16:56:11 2023"
 #------------------------------------------------------------------------------#
 
+rm(list=ls())
+
 knitr::opts_chunk$set(echo = TRUE)
+
+# check if the packages are installed in the computer, if not, install them
+packages<-c("dplyr", "ggplot2", "Rmisc", "lme4", "easystats")
+
+installed_packages<-packages %in% rownames(installed.packages())
+
+if (any(installed_packages==F)){install.packages(packages[!installed_packages])}
+
 ```
 
-Initialize packages and functions
+Source and Initialize packages and functions
 ```{r, include=FALSE}
 rm(list=ls())
 # load packages
@@ -31,8 +41,7 @@ library(dplyr)
 library(ggplot2)
 library(Rmisc)
 library(lme4)
-library(sjPlot)
-
+library(easystats)
 # set custom params for the plots
 custom_param<-function(){
   # add personalized parmaeters
@@ -236,21 +245,21 @@ mod_BDI<-lmer(fixation_prediction~BDI_score*trial_n_block_c +
                 (1+trial_n_block_c|participant), 
               data=all_data_et[all_data_et$trial_n_block<10,])
 
-tab_model(mod_BDI)
+model_parameters(mod_BDI)
 
 # mod shaps
 mod_SHAPS<-lmer(fixation_prediction~SHAPS_score*trial_n_block_c +
                 (1+trial_n_block_c|participant), 
               data=all_data_et[all_data_et$trial_n_block<10,])
 
-tab_model(mod_SHAPS)
+model_parameters(mod_SHAPS)
 
 # categorical
 mod_BIDS_class<-lmer(fixation_prediction~BDI_class*trial_n_block_c +
                   (1|participant), 
                 data=all_data_et[all_data_et$trial_n_block<10,])
 
-tab_model(mod_BIDS_class)
+model_parameters(mod_BIDS_class)
 (anova(mod_BIDS_class))
 
 
@@ -259,7 +268,7 @@ mod_SHAPS_class<-lmer(fixation_prediction~SHAPS_class*trial_n_block_c +
                        (1|participant), 
                      data=all_data_et[all_data_et$trial_n_block<10,])
 
-tab_model(mod_SHAPS_class)
+model_parameters(mod_SHAPS_class)
 anova(mod_SHAPS_class)
 ```
 
