@@ -1,0 +1,294 @@
+---
+title: "Forschungsmodul"
+author: "Mina Biegel"
+date: "2023-07-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Dieses Script liest eine CSV-Datendatei in GNU R ein.
+# Beim Einlesen werden für alle Variablen Beschriftungen (comment) angelegt.
+# Die Beschriftungen für Werte wird ebenfalls als Attribute (attr) abgelegt.
+
+ds_file = file.choose()
+# setwd("./")
+# ds_file = "rdata_PEmem_2023-07-09_10-57.csv"
+
+options(encoding = "UTF-8")
+ds = read.delim(
+  file=ds_file, encoding="UTF-8", fileEncoding="UTF-8",
+  header = FALSE, sep = "\t", quote = "\"",
+  dec = ".", row.names = NULL,
+  col.names = c(
+    "CASE","SERIAL","REF","QUESTNNR","MODE","STARTED","BDI_01","BDI_02","BDI_03",
+    "BDI_04","BDI_05","BDI_06","BDI_07","BDI_08","BDI_09","BDI_10","BDI_11",
+    "BDI_12","BDI_13","BDI_14","BDI_15","BDI_16","BDI_17","BDI_18","BDI_19",
+    "BDI_20","BDI_21","alter","geschlecht","ID","SHAPS_01","SHAPS_02","SHAPS_03",
+    "SHAPS_04","SHAPS_05","SHAPS_06","SHAPS_07","SHAPS_08","SHAPS_09","SHAPS_10",
+    "SHAPS_11","SHAPS_12","SHAPS_13","SHAPS_14","WK02","TIME001","TIME002",
+    "TIME003","TIME004","TIME005","TIME006","TIME007","TIME_SUM","MAILSENT",
+    "LASTDATA","FINISHED","Q_VIEWER","LASTPAGE","MAXPAGE","MISSING","MISSREL",
+    "TIME_RSI","DEG_TIME"
+  ),
+  as.is = TRUE,
+  colClasses = c(
+    CASE="numeric", SERIAL="character", REF="character", QUESTNNR="character",
+    MODE="factor", STARTED="POSIXct", BDI_01="numeric", BDI_02="numeric",
+    BDI_03="numeric", BDI_04="numeric", BDI_05="numeric", BDI_06="numeric",
+    BDI_07="numeric", BDI_08="numeric", BDI_09="numeric", BDI_10="numeric",
+    BDI_11="numeric", BDI_12="numeric", BDI_13="numeric", BDI_14="numeric",
+    BDI_15="numeric", BDI_16="numeric", BDI_17="numeric", BDI_18="numeric",
+    BDI_19="numeric", BDI_20="numeric", BDI_21="numeric", alter="character",
+    geschlecht="numeric", ID="character", SHAPS_01="numeric",
+    SHAPS_02="numeric", SHAPS_03="numeric", SHAPS_04="numeric",
+    SHAPS_05="numeric", SHAPS_06="numeric", SHAPS_07="numeric",
+    SHAPS_08="numeric", SHAPS_09="numeric", SHAPS_10="numeric",
+    SHAPS_11="numeric", SHAPS_12="numeric", SHAPS_13="numeric",
+    SHAPS_14="numeric", WK02="numeric", TIME001="integer", TIME002="integer",
+    TIME003="integer", TIME004="integer", TIME005="integer", TIME006="integer",
+    TIME007="integer", TIME_SUM="integer", MAILSENT="POSIXct",
+    LASTDATA="POSIXct", FINISHED="logical", Q_VIEWER="logical",
+    LASTPAGE="numeric", MAXPAGE="numeric", MISSING="numeric", MISSREL="numeric",
+    TIME_RSI="numeric", DEG_TIME="numeric"
+  ),
+  skip = 1,
+  check.names = TRUE, fill = TRUE,
+  strip.white = FALSE, blank.lines.skip = TRUE,
+  comment.char = "",
+  na.strings = ""
+)
+
+row.names(ds) = ds$CASE
+
+rm(ds_file)
+
+attr(ds, "project") = "PEmem"
+attr(ds, "description") = "PEmem"
+attr(ds, "date") = "2023-07-09 10:57:22"
+attr(ds, "server") = "https://www.soscisurvey.de"
+
+# Variable und Value Labels
+ds$BDI_01 = factor(ds$BDI_01, levels=c("1","2","3","4","-9"), labels=c("0 Ich bin nicht traurig","1 Ich bin oft traurig","2 Ich bin ständig traurig","3 Ich bin so traurig oder unglücklich, dass ich es nicht aushalte","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_02 = factor(ds$BDI_02, levels=c("1","2","3","4","-9"), labels=c("0 Ich sehe nicht mutlos in die Zukunft","1 Ich sehe mutloser in die Zukunft als sonst","2 Ich bin mutlos und erwarte nicht, dass meine Situation besser wird","3 Ich glaube, dass meine Zukunft hoffnungslos ist und nur noch schlechter wird","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_03 = factor(ds$BDI_03, levels=c("1","2","3","4","-9"), labels=c("0 Ich fühle mich nicht als Versager","1 Ich habe häufiger Versagensgefühle","2 Wenn ich zurückblicke, sehe ich eine Menge Fehlschläge","3 Ich habe das Gefühl, als Mensch ein völliger Versager zu sein","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_04 = factor(ds$BDI_04, levels=c("1","2","3","4","-9"), labels=c("0 Ich kann die Dinge genauso gut genießen wie früher","1 Ich kann die Dinge nicht mehr so genießen wie früher","2 Dinge, die mir früher Freude gemacht haben, kann ich kaum mehr genießen","3 Dinge, die mir früher Freude gemacht haben, kann ich überhaupt nicht mehr genießen","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_05 = factor(ds$BDI_05, levels=c("1","2","3","4","-9"), labels=c("0 Ich habe keine besonderen Schuldgefühle","1 Ich habe oft Schuldgefühle wegen Dingen, die ich getan habe oder hätte tun sollen","2 Ich habe die meiste Zeit Schuldgefühle","3 Ich habe ständig Schuldgefühle","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_06 = factor(ds$BDI_06, levels=c("1","2","3","4","-9"), labels=c("0 Ich habe nicht das Gefühl, für etwas bestraft zu sein","1 Ich habe das Gefühl, vielleicht bestraft zu werden","2 Ich erwarte, bestraft zu werden","3 Ich habe das Gefühl, bestraft zu sein","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_07 = factor(ds$BDI_07, levels=c("1","2","3","4","-9"), labels=c("0 Ich halte von mir genauso viel wie immer","1 Ich habe Vertrauen in mich verloren","2 Ich bin von mir enttäuscht","3 Ich lehne mich völlig ab","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_08 = factor(ds$BDI_08, levels=c("1","2","3","4","-9"), labels=c("0 Ich kritisiere oder tadle mich nicht mehr als sonst","1 Ich bin mir gegenüber kritischer als sonst","2 Ich kritisiere mich für all meine Mängel","3 Ich gebe mir die Schuld für alles Schlimme, was passiert","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_09 = factor(ds$BDI_09, levels=c("1","2","3","4","-9"), labels=c("0 Ich denke nicht daran, mir etwas anzutun","1 Ich denke manchmal an Selbstmord, aber ich würde es nicht tun","2 Ich möchte mich am liebsten umbringen","3 Ich würde mich umbringen, wenn ich die Gelegenheit dazu hätte","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_10 = factor(ds$BDI_10, levels=c("1","2","3","4","-9"), labels=c("0 ich weine nicht öfter als früher","1 Ich weine jetzt mehr als früher","2 Ich weine beim geringsten Anlass","3 Ich möchte gern weinen, aber ich kann nicht","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_11 = factor(ds$BDI_11, levels=c("1","2","3","4","-9"), labels=c("0 Ich bin nicht unruhiger als sonst","1 Ich bin unruhiger als sonst","2 Ich bin so unruhig, dass es mir schwer fällt, stillzusitzen","3 Ich bin so unruhig, dass ich micht ständig bewegen oder etwas tun muss","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_12 = factor(ds$BDI_12, levels=c("1","2","3","4","-9"), labels=c("0 ich habe das Interesse an anderen Menschen oder Tätigkeiten nicht verloren","1 Ich habe weniger Interesse an anderen Menschen oder an Dingen als sonst","2 Ich habe das Interesse an anderen Menschen oder an Dingen zum größten Teil verloren","3 Es fällt mir schwer, mich überhaupt für irgend etwas zu interessieren","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_13 = factor(ds$BDI_13, levels=c("1","2","3","4","-9"), labels=c("0 Ich bin so entschlussfreudig wie immer","1 Es fällt mir schwerer als sonst, Entscheidungen zu treffen","2 Es fällt mir sehr viel schwerer als sonst, Entscheidungen zu treffen","3 Ich habe Mühe, überhaupt Entscheidungen zu treffen","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_14 = factor(ds$BDI_14, levels=c("1","2","3","4","-9"), labels=c("0 Ich fühle mich nicht wertlos","1 Ich halte mich für weniger wertvoll und nützlich als sonst","2 Verglichen mit anderen Menschen fühle ich mich viel weniger wert","3 Ich fühle mich völlig wertlos","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_15 = factor(ds$BDI_15, levels=c("1","2","3","4","-9"), labels=c("0 Ich habe so viel Energie wie immer","1 Ich habe weniger Energie als sonst","2 Ich habe so wenig Energie, dass ich kaum noch etwas schaffe","3 Ich habe keine Energie mehr, um überhaupt noch etwas zu tun","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_16 = factor(ds$BDI_16, levels=c("1","2","3","4","5","6","7","-9"), labels=c("0 Meine Schlafgewohnheiten haben sich nicht verändert","1a Ich schlafe etwas mehr als sonst","1b ich schlafe etwas weniger als sonst","2a ich schlafe viel mehr als sonst","2b ich schlafe viel weniger als sonst","3a Ich schlafe fast den ganzen Tag","3b Ich wache 1-2 Stunden früher auf als gewöhnlich und kann nicht mehr einschlafen","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_17 = factor(ds$BDI_17, levels=c("1","2","3","4","-9"), labels=c("0 Ich bin nicht reizbarer als sonst","1 Ich bin reizbarer als sonst","2 Ich bin viel reizbarer als sonst","3 Ich fühle mich dauernd gereizt","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_18 = factor(ds$BDI_18, levels=c("1","2","3","4","5","6","7","-9"), labels=c("0 Mein Appetit hat sich nicht verändert","1a Mein Appetit ist etwas schlechter als sonst","1b Mein Appetit ist etwas größer als sonst","2a Mein Appetit ist viel schlechter als sonst","2b Mein Appetit ist viel größer als sonst","3a Ich habe überhaupt keinen Appetit","3b Ich habe ständig Heißhunger","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_19 = factor(ds$BDI_19, levels=c("1","2","3","4","-9"), labels=c("0 Ich kann mich so gut konzentrieren wie immer","1 Ich kann mich nicht mehr so gut konzentrieren wie sonst","2 Es fällt mir schwer, mich längere Zeit auf irgend etwas zu konzentrieren","3 Ich kann mich überhaupt nicht mehr konzentrieren","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_20 = factor(ds$BDI_20, levels=c("1","2","3","4","-9"), labels=c("0 Ich fühle mich nicht müder oder erschöpfter als sonst","1 ich werde schneller müde oder erschöpft als sonst","2 Für viel Dinge, die ich üblicherweise tue, bin ich zu müde oder erschöpft","3 Ich bin so müde oder erschöpft, dass ich fast nichts mehr tun kann","[NA] nicht beantwortet"), ordered=FALSE)
+ds$BDI_21 = factor(ds$BDI_21, levels=c("1","2","3","4","-9"), labels=c("0 Mein Interesse an Sexualität hat sich in letzter nicht verändert","1 Ich interessiere mich weniger für Sexualität als früher","2 Ich interessiere mich jetzt viel weniger für Sexualität","3 Ich habe das Interesse an Sexualität völlig verloren","[NA] nicht beantwortet"), ordered=FALSE)
+ds$geschlecht = factor(ds$geschlecht, levels=c("1","2","3","-9"), labels=c("weiblich","männlich","divers","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_01 = factor(ds$SHAPS_01, levels=c("1","2","3","4","-9"), labels=c("Ich stimme überhaupt nicht zu","Ich stimme nicht zu","Ich stimme zu","Ich stimme voll zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_02 = factor(ds$SHAPS_02, levels=c("1","2","3","4","-9"), labels=c("Ich stimme voll zu","Ich stimme zu","Ich stimme nicht zu","Ich stimme überhaupt nicht zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_03 = factor(ds$SHAPS_03, levels=c("1","2","3","4","-9"), labels=c("Ich stimme überhaupt nicht zu","Ich stimme nicht zu","Ich stimme zu","Ich stimme voll zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_04 = factor(ds$SHAPS_04, levels=c("1","2","3","4","-9"), labels=c("Ich stimme voll zu","Ich stimme zu","Ich stimme nicht zu","Ich stimme überhaupt nicht zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_05 = factor(ds$SHAPS_05, levels=c("1","2","3","4","-9"), labels=c("Ich stimme voll zu","Ich stimme zu","Ich stimme nicht zu","Ich stimme überhaupt nicht zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_06 = factor(ds$SHAPS_06, levels=c("1","2","3","4","-9"), labels=c("Ich stimme überhaupt nicht zu","Ich stimme nicht zu","Ich stimme zu","Ich stimme voll zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_07 = factor(ds$SHAPS_07, levels=c("1","2","3","4","-9"), labels=c("Ich stimme voll zu","Ich stimme zu","Ich stimme nicht zu","Ich stimme überhaupt nich tzu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_08 = factor(ds$SHAPS_08, levels=c("1","2","3","4","-9"), labels=c("Ich stimme überhaupt nicht zu","Ich stimme nicht zu","Ich stimme zu","Ich stimme voll zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_09 = factor(ds$SHAPS_09, levels=c("1","2","3","4","-9"), labels=c("Ich stimme voll zu","Ich stimme zu","Ich stimme nicht zu","Ich stimme überhaupt nicht zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_10 = factor(ds$SHAPS_10, levels=c("1","2","3","4","-9"), labels=c("Ich stimme überhaupt nicht zu","Ich stimme nicht zu","Ich stimme zu","Ich stimme voll zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_11 = factor(ds$SHAPS_11, levels=c("1","2","3","4","-9"), labels=c("Ich stimme überhaupt nicht zu","ich stimme nicht zu","Ich stimme zu","Ich stimme voll zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_12 = factor(ds$SHAPS_12, levels=c("1","2","3","-9"), labels=c("Ich stimme voll zu","Ich stimme zu","Ich stimme überhaupt nicht zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_13 = factor(ds$SHAPS_13, levels=c("1","2","3","4","-9"), labels=c("Ich stimme überhaupt nicht zu","Ich stimme nicht zu","Ich stimme zu","Ich stimme voll zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$SHAPS_14 = factor(ds$SHAPS_14, levels=c("1","2","3","4","-9"), labels=c("Ich stimme voll zu","Ich stimme zu","Ich stimme nicht zu","Ich stimme überhaupt nicht zu","[NA] nicht beantwortet"), ordered=FALSE)
+ds$WK02 = factor(ds$WK02, levels=c("1","2","-9"), labels=c("Ja","Nein","[NA] nicht beantwortet"), ordered=FALSE)
+attr(ds$FINISHED,"F") = "abgebrochen"
+attr(ds$FINISHED,"T") = "ausgefüllt"
+attr(ds$Q_VIEWER,"F") = "Teilnehmer"
+attr(ds$Q_VIEWER,"T") = "Durchklicker"
+comment(ds$SERIAL) = "Seriennummer (sofern verwendet)"
+comment(ds$REF) = "Referenz (sofern im Link angegeben)"
+comment(ds$QUESTNNR) = "Fragebogen, der im Interview verwendet wurde"
+comment(ds$MODE) = "Interview-Modus"
+comment(ds$STARTED) = "Zeitpunkt zu dem das Interview begonnen hat (Europe/Berlin)"
+comment(ds$BDI_01) = "Traurigkeit"
+comment(ds$BDI_02) = "Pessimismus"
+comment(ds$BDI_03) = "Versagensgefühle"
+comment(ds$BDI_04) = "Verlust von Freude"
+comment(ds$BDI_05) = "Schuldgefühle"
+comment(ds$BDI_06) = "Bestrafungsgefühle"
+comment(ds$BDI_07) = "Selbstablehnung"
+comment(ds$BDI_08) = "Selbstvorwürfe"
+comment(ds$BDI_09) = "Selbstmordgedanken"
+comment(ds$BDI_10) = "Weinen"
+comment(ds$BDI_11) = "Unruhe"
+comment(ds$BDI_12) = "Interessenverlust"
+comment(ds$BDI_13) = "Entschlussunfähigkeit"
+comment(ds$BDI_14) = "Wertlosigkeit"
+comment(ds$BDI_15) = "Energieverlust"
+comment(ds$BDI_16) = "Veränderungn der Schlafgewohnheiten"
+comment(ds$BDI_17) = "Reizbarkeit"
+comment(ds$BDI_18) = "Veränderungen des Appetits"
+comment(ds$BDI_19) = "Konzentrationsschwierigkeiten"
+comment(ds$BDI_20) = "Ermüdung oder Erschöpfung"
+comment(ds$BDI_21) = "Verlust an sexuellem Interesse"
+comment(ds$alter) = "Alter: [01]"
+comment(ds$geschlecht) = "Geschlecht"
+comment(ds$ID) = "ID: [01]"
+comment(ds$SHAPS_01) = "Lieblingssendung"
+comment(ds$SHAPS_02) = "Familie"
+comment(ds$SHAPS_03) = "Hobbies"
+comment(ds$SHAPS_04) = "Essen"
+comment(ds$SHAPS_05) = "Bad"
+comment(ds$SHAPS_06) = "Duft"
+comment(ds$SHAPS_07) = "Gesichter"
+comment(ds$SHAPS_08) = "Erscheinung"
+comment(ds$SHAPS_09) = "Lesen"
+comment(ds$SHAPS_10) = "Trinken"
+comment(ds$SHAPS_11) = "kleine Dinge"
+comment(ds$SHAPS_12) = "Landschaft"
+comment(ds$SHAPS_13) = "Helfen"
+comment(ds$SHAPS_14) = "Lob"
+comment(ds$WK02) = "Einwilligung"
+comment(ds$TIME001) = "Verweildauer Seite 1"
+comment(ds$TIME002) = "Verweildauer Seite 2"
+comment(ds$TIME003) = "Verweildauer Seite 3"
+comment(ds$TIME004) = "Verweildauer Seite 4"
+comment(ds$TIME005) = "Verweildauer Seite 5"
+comment(ds$TIME006) = "Verweildauer Seite 6"
+comment(ds$TIME007) = "Verweildauer Seite 7"
+comment(ds$TIME_SUM) = "Verweildauer gesamt (ohne Ausreißer)"
+comment(ds$MAILSENT) = "Versandzeitpunkt der Einladungsmail (nur für nicht-anonyme Adressaten)"
+comment(ds$LASTDATA) = "Zeitpunkt als der Datensatz das letzte mal geändert wurde"
+comment(ds$FINISHED) = "Wurde die Befragung abgeschlossen (letzte Seite erreicht)?"
+comment(ds$Q_VIEWER) = "Hat der Teilnehmer den Fragebogen nur angesehen, ohne die Pflichtfragen zu beantworten?"
+comment(ds$LASTPAGE) = "Seite, die der Teilnehmer zuletzt bearbeitet hat"
+comment(ds$MAXPAGE) = "Letzte Seite, die im Fragebogen bearbeitet wurde"
+comment(ds$MISSING) = "Anteil fehlender Antworten in Prozent"
+comment(ds$MISSREL) = "Anteil fehlender Antworten (gewichtet nach Relevanz)"
+comment(ds$TIME_RSI) = "Maluspunkte für schnelles Ausfüllen"
+comment(ds$DEG_TIME) = "Maluspunkte für schnelles Ausfüllen"
+
+
+
+# Assure that the comments are retained in subsets
+as.data.frame.avector = as.data.frame.vector
+`[.avector` <- function(x,i,...) {
+  r <- NextMethod("[")
+  mostattributes(r) <- attributes(x)
+  r
+}
+ds_tmp = data.frame(
+  lapply(ds, function(x) {
+    structure( x, class = c("avector", class(x) ) )
+  } )
+)
+mostattributes(ds_tmp) = attributes(ds)
+ds = ds_tmp
+rm(ds_tmp)
+
+
+
+```
+
+
+```{r}
+data <- ds
+names(data)
+```
+```{r}
+data$CASE <- NULL
+data$SERIAL <- NULL
+data$REF <- NULL
+data$QUESTNNR <- NULL
+data$MODE <- NULL
+data$STARTED <- NULL
+data$TIME001 <- NULL
+data$TIME002 <- NULL
+data$TIME003 <- NULL
+data$TIME004 <- NULL
+data$TIME005 <- NULL
+data$TIME006 <- NULL
+data$TIME007 <- NULL
+data$Q_VIEWER <- NULL
+data$DEG_TIME <- NULL
+data$TIME_RSI <- NULL
+data$TIME_SUM <- NULL
+data$MAILSENT <- NULL
+data$LASTDATA <- NULL
+data$FINISHED <- NULL
+data$LASTDATA <- NULL
+data$LASTPAGE <- NULL
+data$MAXPAGE <- NULL
+data$MISSING <- NULL
+data$MISSREL <- NULL
+```
+
+```{r}
+names(data)
+```
+
+```{r}
+data$ID
+```
+```{r}
+str(data$BDI_01)
+
+```
+```{r}
+data$BDI_01 <- as.numeric(data$BDI_01) -1
+data$BDI_02 <- as.numeric(data$BDI_02) -1
+data$BDI_03 <- as.numeric(data$BDI_03) -1
+data$BDI_04 <- as.numeric(data$BDI_04) -1
+data$BDI_05 <- as.numeric(data$BDI_05) -1
+data$BDI_06 <- as.numeric(data$BDI_06) -1
+data$BDI_07 <- as.numeric(data$BDI_07) -1
+data$BDI_08 <- as.numeric(data$BDI_08) -1
+data$BDI_09 <- as.numeric(data$BDI_09) -1
+data$BDI_10 <- as.numeric(data$BDI_10) -1
+data$BDI_11 <- as.numeric(data$BDI_11) -1
+data$BDI_12 <- as.numeric(data$BDI_12) -1
+data$BDI_13 <- as.numeric(data$BDI_13) -1
+data$BDI_14 <- as.numeric(data$BDI_14) -1
+data$BDI_15 <- as.numeric(data$BDI_15) -1
+data$BDI_16 <- as.numeric(data$BDI_16) -1
+data$BDI_17 <- as.numeric(data$BDI_17) -1
+data$BDI_18 <- as.numeric(data$BDI_18) -1
+data$BDI_19 <- as.numeric(data$BDI_19) -1
+data$BDI_20 <- as.numeric(data$BDI_20) -1
+data$BDI_21 <- as.numeric(data$BDI_21) -1
+```
+
+```{r}
+data$BDI_sum  <- rowSums(data[, c("BDI_01", "BDI_02", "BDI_03", "BDI_04", "BDI_05", "BDI_06", "BDI_07", "BDI_08", "BDI_09", "BDI_10", "BDI_11", "BDI_12", "BDI_13", "BDI_14", "BDI_15", "BDI_16", "BDI_17", "BDI_18", "BDI_19", "BDI_20", "BDI_21")])
+
+```
+
+```{r}
+data$BDI_sum
+```
+```{r}
+data$SHAPS_01 <- as.numeric(data$SHAPS_01) -1
+data$SHAPS_02 <- as.numeric(data$SHAPS_02) -1
+data$SHAPS_03 <- as.numeric(data$SHAPS_03) -1
+data$SHAPS_04 <- as.numeric(data$SHAPS_04) -1
+data$SHAPS_05 <- as.numeric(data$SHAPS_05) -1
+data$SHAPS_06 <- as.numeric(data$SHAPS_06) -1
+data$SHAPS_07 <- as.numeric(data$SHAPS_07) -1
+data$SHAPS_08 <- as.numeric(data$SHAPS_08) -1
+data$SHAPS_09 <- as.numeric(data$SHAPS_09) -1
+data$SHAPS_10 <- as.numeric(data$SHAPS_10) -1
+data$SHAPS_11 <- as.numeric(data$SHAPS_11) -1
+data$SHAPS_12 <- as.numeric(data$SHAPS_12) -1
+data$SHAPS_13 <- as.numeric(data$SHAPS_13) -1
+data$SHAPS_14 <- as.numeric(data$SHAPS_14) -1
+
+```
+
+```{r}
+data$SHAPS_sum <- rowSums(data[, c("SHAPS_01", "SHAPS_02", "SHAPS_03", "SHAPS_04", "SHAPS_05", "SHAPS_06", "SHAPS_07", "SHAPS_08", "SHAPS_09", "SHAPS_10", "SHAPS_11", "SHAPS_12", "SHAPS_13", "SHAPS_14")])
+```
+

@@ -3,10 +3,13 @@ title: "Analysis_Isabel"
 author: "Francesco Pupillo"
 date: "2023-07-05"
 output: 
-    md_document:
-     variant: markdown_github
-     toc: true
-     toc_depth: 6
+  github_document:
+    toc: true
+    toc_depth: 2
+   # md_document:
+    # variant: markdown_github
+    # toc: true
+    # toc_depth: 6
 ---
 
 # Analysis of the Data for Isabel
@@ -25,7 +28,7 @@ rm(list=ls())
 knitr::opts_chunk$set(echo = TRUE)
 
 # check if the packages are installed in the computer, if not, install them
-packages<-c("dplyr", "ggplot2", "Rmisc", "lme4", "easystats")
+packages<-c("dplyr", "ggplot2", "Rmisc", "lme4", "easystats", "sJPlot")
 
 installed_packages<-packages %in% rownames(installed.packages())
 
@@ -41,7 +44,9 @@ library(dplyr)
 library(ggplot2)
 library(Rmisc)
 library(lme4)
+library(lmerTest)
 library(easystats)
+#library(sjPlot)
 # set custom params for the plots
 custom_param<-function(){
   # add personalized parmaeters
@@ -154,7 +159,7 @@ ggplot(all_data_et %>%
 ```{r}
 # look at learning only from the first 10 trials
 # by subject
-ggplot(all_data_et[all_data_et$trial_n_block<10 & all_data_et$type!='singletons',], # we do not want the singletons
+ggplot(all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',], # we do not want the singletons
        aes(x = trial_n_block, y = fixation_prediction,
            #colour = age_group, 
            group = 1))+
@@ -168,7 +173,7 @@ ggplot(all_data_et[all_data_et$trial_n_block<10 & all_data_et$type!='singletons'
 ```
 ### Learning for the first 10 trials: across participants
 ```{r}
-ggplot(all_data_et[all_data_et$trial_n_block<10,], aes( x=trial_n_block, y=fixation_prediction))+
+ggplot(all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',], aes( x=trial_n_block, y=fixation_prediction))+
   geom_line(stat="smooth",method = "lm", formula=y~x, alpha=0.5, se=F)+
   aes(colour = factor(participant))+
   geom_smooth(method="lm",formula=y~x, se=T, colour = "black" )+
@@ -222,7 +227,7 @@ for ( n in 1:nrow(all_data_et)){
 
 ### Plot the questionnaires by symptom severity
 ```{r}
-ggplot(all_data_et[all_data_et$trial_n_block<10,], aes( x=trial_n_block, y=fixation_prediction))+
+ggplot(all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',], aes( x=trial_n_block, y=fixation_prediction))+
   geom_line(stat="smooth",method = "lm", formula=y~x, alpha=0.5, se=F)+
   aes(colour = factor(participant))+
   geom_smooth(method="lm",formula=y~x, se=T, colour = "black" )+
@@ -243,21 +248,24 @@ all_data_et$trial_n_block_c<-scale(all_data_et$trial_n_block, center = T)
 # analyze
 mod_BDI<-lmer(fixation_prediction~BDI_score*trial_n_block_c +
                 (1+trial_n_block_c|participant), 
-              data=all_data_et[all_data_et$trial_n_block<10,])
+              data=all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',])
 
 model_parameters(mod_BDI)
+
+# alternatively, to print the table in your local pc, you can use:
+model_parameters
 
 # mod shaps
 mod_SHAPS<-lmer(fixation_prediction~SHAPS_score*trial_n_block_c +
                 (1+trial_n_block_c|participant), 
-              data=all_data_et[all_data_et$trial_n_block<10,])
+              data=all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',])
 
 model_parameters(mod_SHAPS)
 
 # categorical
 mod_BIDS_class<-lmer(fixation_prediction~BDI_class*trial_n_block_c +
                   (1|participant), 
-                data=all_data_et[all_data_et$trial_n_block<10,])
+                data=all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',])
 
 model_parameters(mod_BIDS_class)
 (anova(mod_BIDS_class))
@@ -266,7 +274,7 @@ model_parameters(mod_BIDS_class)
 
 mod_SHAPS_class<-lmer(fixation_prediction~SHAPS_class*trial_n_block_c +
                        (1|participant), 
-                     data=all_data_et[all_data_et$trial_n_block<10,])
+                     data=all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',])
 
 model_parameters(mod_SHAPS_class)
 anova(mod_SHAPS_class)
@@ -274,6 +282,65 @@ anova(mod_SHAPS_class)
 
 ### Median Split
 ```{r}
+# get the median of the BDI
+BDI_median<-median(quest$BDI_score)
+
+# assign participant to low depressive sympt or high depress sympt
+quest$BDI_split<-ifelse(quest$BDI_score < BDI_median, "Low_depr", "High_depr" )
+
+# check distr
+table(quest$BDI_split)
+
+# assign it to the dataset
+all_data_et$BDI_split<-NA
+
+for (n in 1: nrow(all_data_et)){
+  if (any(quest$ID==all_data_et$participant[n])){
+  all_data_et$BDI_split[n]<-quest$BDI_split[quest$ID==all_data_et$participant[n]]
+  }
+}
+
+# plot
+ggplot(all_data_et[all_data_et$trial_n_block<=10,], aes( x=trial_n_block, y=fixation_prediction))+
+  geom_line(stat="smooth",method = "lm", formula=y~x, alpha=0.5, se=F)+
+  aes(colour = factor(participant))+
+  geom_smooth(method="lm",formula=y~x, se=T, colour = "black" )+
+  theme(strip.text.x = element_text(size = 13))+
+  theme_classic()+
+  theme(panel.spacing = unit(1, "lines"))+
+  facet_wrap(.~BDI_split)+
+  #ggtitle("Experiment 2")+
+  theme(legend.position = "none")
+
+# analyze
+mod_median_split<-lmer(fixation_prediction~BDI_split*trial_n_block +
+                       (1+trial_n_block|participant), 
+                     data=all_data_et[all_data_et$trial_n_block<=10,])
+
+summary(mod_median_split)
+model_parameters(mod_median_split)
+
+# print the long dataset for the first 10 trials
+write.csv(all_data_et[all_data_et$trial_n_block<=10,], "output_files/et_data_first10.csv", row.names =F)
+
+# extract coefficients
+rand_eff<-ranef(mod_median_split)
+
+# trialNestrimates
+coeff<-rand_eff$participant$trial_n_block_c
+
+# part id
+ID<-unique(all_data_et$participant[!is.na(all_data_et$BDI_split)])
+
+# create the aggregated dataset
+aggr_data<-as.data.frame(cbind(ID, coeff))
+
+# add BDI_split
+aggr_data$BDI_split<-NA
+
+for (n in 1: nrow(aggr_data)){
+  aggr_data$BDI_split[n]<-quest$BDI_split[quest$ID==aggr_data$ID[n]]
+}
 
 ```
 

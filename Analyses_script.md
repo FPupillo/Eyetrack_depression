@@ -1,14 +1,11 @@
+Analysis_Isabel
+================
+Francesco Pupillo
+2023-07-05
+
 -   [Analysis of the Data for Isabel](#analysis-of-the-data-for-isabel)
     -   [Get the data](#get-the-data)
     -   [ET data](#et-data)
-        -   [prediction](#prediction)
-        -   [Learning for the first 10 trials, by
-            participant](#learning-for-the-first-10-trials-by-participant)
-        -   [Include the questionnaires](#include-the-questionnaires)
-        -   [Plot the questionnaires by symptom
-            severity](#plot-the-questionnaires-by-symptom-severity)
-        -   [Analyze](#analyze)
-        -   [Median Split](#median-split)
 
 # Analysis of the Data for Isabel
 
@@ -120,17 +117,24 @@ ggplot(all_data_et %>%
     ## `summarise()` has grouped output by 'participant'. You can override using the
     ## `.groups` argument.
 
-    ## No summary function supplied, defaulting to `mean_se()`
+    ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+    ## ℹ Please use `linewidth` instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
+
     ## No summary function supplied, defaulting to `mean_se()`
 
-![](Analyses_script_files/figure-markdown_github/unnamed-chunk-3-1.png)
+    ## No summary function supplied, defaulting to `mean_se()`
+
+![](Analyses_script_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 ### Learning for the first 10 trials, by participant
 
 ``` r
 # look at learning only from the first 10 trials
 # by subject
-ggplot(all_data_et[all_data_et$trial_n_block<10 & all_data_et$type!='singletons',], # we do not want the singletons
+ggplot(all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',], # we do not want the singletons
        aes(x = trial_n_block, y = fixation_prediction,
            #colour = age_group, 
            group = 1))+
@@ -143,11 +147,19 @@ ggplot(all_data_et[all_data_et$trial_n_block<10 & all_data_et$type!='singletons'
   ggtitle("Fixation prediction and age group")
 ```
 
-![](Analyses_script_files/figure-markdown_github/unnamed-chunk-4-1.png)
-\### Learning for the first 10 trials: across participants
+    ## Warning: The `fun.y` argument of `stat_summary()` is deprecated as of ggplot2 3.3.0.
+    ## ℹ Please use the `fun` argument instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
+
+    ## Warning: Removed 119 rows containing non-finite values (`stat_summary()`).
+
+![](Analyses_script_files/figure-gfm/unnamed-chunk-4-1.png)<!-- --> \###
+Learning for the first 10 trials: across participants
 
 ``` r
-ggplot(all_data_et[all_data_et$trial_n_block<10,], aes( x=trial_n_block, y=fixation_prediction))+
+ggplot(all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',], aes( x=trial_n_block, y=fixation_prediction))+
   geom_line(stat="smooth",method = "lm", formula=y~x, alpha=0.5, se=F)+
   aes(colour = factor(participant))+
   geom_smooth(method="lm",formula=y~x, se=T, colour = "black" )+
@@ -159,7 +171,10 @@ ggplot(all_data_et[all_data_et$trial_n_block<10,], aes( x=trial_n_block, y=fixat
   theme(legend.position = "none")
 ```
 
-![](Analyses_script_files/figure-markdown_github/unnamed-chunk-5-1.png)
+    ## Warning: Removed 119 rows containing non-finite values (`stat_smooth()`).
+    ## Removed 119 rows containing non-finite values (`stat_smooth()`).
+
+![](Analyses_script_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ### Include the questionnaires
 
@@ -171,13 +186,13 @@ quest<-read.csv("Questionnaires.csv", sep = ";")
 hist(quest$BDI_score)
 ```
 
-![](Analyses_script_files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](Analyses_script_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ``` r
 hist(quest$SHAPS_score)
 ```
 
-![](Analyses_script_files/figure-markdown_github/unnamed-chunk-6-2.png)
+![](Analyses_script_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->
 
 ``` r
 # attache the values to each participant
@@ -212,7 +227,7 @@ for ( n in 1:nrow(all_data_et)){
 ### Plot the questionnaires by symptom severity
 
 ``` r
-ggplot(all_data_et[all_data_et$trial_n_block<10,], aes( x=trial_n_block, y=fixation_prediction))+
+ggplot(all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',], aes( x=trial_n_block, y=fixation_prediction))+
   geom_line(stat="smooth",method = "lm", formula=y~x, alpha=0.5, se=F)+
   aes(colour = factor(participant))+
   geom_smooth(method="lm",formula=y~x, se=T, colour = "black" )+
@@ -224,7 +239,10 @@ ggplot(all_data_et[all_data_et$trial_n_block<10,], aes( x=trial_n_block, y=fixat
   theme(legend.position = "none")
 ```
 
-![](Analyses_script_files/figure-markdown_github/unnamed-chunk-7-1.png)
+    ## Warning: Removed 119 rows containing non-finite values (`stat_smooth()`).
+    ## Removed 119 rows containing non-finite values (`stat_smooth()`).
+
+![](Analyses_script_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ### Analyze
 
@@ -236,8 +254,14 @@ all_data_et$trial_n_block_c<-scale(all_data_et$trial_n_block, center = T)
 # analyze
 mod_BDI<-lmer(fixation_prediction~BDI_score*trial_n_block_c +
                 (1+trial_n_block_c|participant), 
-              data=all_data_et[all_data_et$trial_n_block<10,])
+              data=all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',])
+```
 
+    ## boundary (singular) fit: see help('isSingular')
+
+    ## Warning: Model failed to converge with 1 negative eigenvalue: -2.9e-01
+
+``` r
 model_parameters(mod_BDI)
 ```
 
@@ -246,33 +270,43 @@ model_parameters(mod_BDI)
 
     ## # Fixed Effects
     ## 
-    ## Parameter                   | Coefficient |    SE |           95% CI |    t(308) |     p
-    ## ----------------------------------------------------------------------------------------
-    ## (Intercept)                 |      -42.97 | 45.25 | [-132.00, 46.06] |     -0.95 | 0.343
-    ## BDI score                   |       -0.24 |  3.79 | [  -7.69,  7.21] |     -0.06 | 0.950
-    ## trial n block c             |      -61.07 | 27.74 | [-115.66, -6.49] |     -2.20 | 0.028
-    ## BDI score × trial n block c |       -0.02 |  2.36 | [  -4.67,  4.63] | -9.51e-03 | 0.992
+    ## Parameter                   | Coefficient |    SE |            95% CI | t(340) |     p
+    ## --------------------------------------------------------------------------------------
+    ## (Intercept)                 |      -52.33 | 31.83 | [-114.94,  10.29] |  -1.64 | 0.101
+    ## BDI score                   |        0.78 |  2.75 | [  -4.64,   6.19] |   0.28 | 0.778
+    ## trial n block c             |      -67.49 | 21.97 | [-110.70, -24.28] |  -3.07 | 0.002
+    ## BDI score × trial n block c |        0.64 |  1.90 | [  -3.09,   4.38] |   0.34 | 0.735
     ## 
     ## # Random Effects
     ## 
     ## Parameter                                    | Coefficient
     ## ----------------------------------------------------------
-    ## SD (Intercept: participant)                  |       60.07
-    ## SD (trial_n_block_c: participant)            |       29.16
-    ## Cor (Intercept~trial_n_block_c: participant) |        1.00
-    ## SD (Residual)                                |       41.54
+    ## SD (Intercept: participant)                  |        0.00
+    ## SD (trial_n_block_c: participant)            |       10.61
+    ## Cor (Intercept~trial_n_block_c: participant) |            
+    ## SD (Residual)                                |       40.83
 
     ## 
     ## Uncertainty intervals (equal-tailed) and p-values (two-tailed) computed
-    ##   using a Wald t-distribution approximation. Uncertainty intervals for
-    ##   random effect variances computed using a Wald z-distribution
-    ##   approximation.
+    ##   using a Wald t-distribution approximation.
+
+``` r
+# alternatively, to print the table in your local pc, you can use:
+model_parameters
+```
+
+    ## function (model, ...) 
+    ## {
+    ##     UseMethod("model_parameters")
+    ## }
+    ## <bytecode: 0x55b9403f19b8>
+    ## <environment: namespace:parameters>
 
 ``` r
 # mod shaps
 mod_SHAPS<-lmer(fixation_prediction~SHAPS_score*trial_n_block_c +
                 (1+trial_n_block_c|participant), 
-              data=all_data_et[all_data_et$trial_n_block<10,])
+              data=all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',])
 ```
 
     ## boundary (singular) fit: see help('isSingular')
@@ -286,33 +320,31 @@ model_parameters(mod_SHAPS)
 
     ## # Fixed Effects
     ## 
-    ## Parameter                     | Coefficient |    SE |            95% CI | t(308) |     p
+    ## Parameter                     | Coefficient |    SE |           95% CI | t(340) |      p
     ## ----------------------------------------------------------------------------------------
-    ## (Intercept)                   |      -54.48 | 32.57 | [-118.56,   9.60] |  -1.67 | 0.095
-    ## SHAPS score                   |        8.55 | 23.33 | [ -37.35,  54.44] |   0.37 | 0.714
-    ## trial n block c               |      -64.65 | 19.94 | [-103.89, -25.40] |  -3.24 | 0.001
-    ## SHAPS score × trial n block c |        2.41 | 14.53 | [ -26.19,  31.01] |   0.17 | 0.868
+    ## (Intercept)                   |      -48.57 | 24.84 | [-97.44,   0.30] |  -1.96 | 0.051 
+    ## SHAPS score                   |        8.34 | 18.27 | [-27.59,  44.27] |   0.46 | 0.648 
+    ## trial n block c               |      -60.95 | 15.57 | [-91.57, -30.33] |  -3.92 | < .001
+    ## SHAPS score × trial n block c |        2.29 | 11.67 | [-20.66,  25.24] |   0.20 | 0.844 
     ## 
     ## # Random Effects
     ## 
     ## Parameter                                    | Coefficient
     ## ----------------------------------------------------------
-    ## SD (Intercept: participant)                  |       59.64
-    ## SD (trial_n_block_c: participant)            |       29.76
+    ## SD (Intercept: participant)                  |       35.98
+    ## SD (trial_n_block_c: participant)            |       14.46
     ## Cor (Intercept~trial_n_block_c: participant) |        1.00
-    ## SD (Residual)                                |       41.54
+    ## SD (Residual)                                |       40.63
 
     ## 
     ## Uncertainty intervals (equal-tailed) and p-values (two-tailed) computed
-    ##   using a Wald t-distribution approximation. Uncertainty intervals for
-    ##   random effect variances computed using a Wald z-distribution
-    ##   approximation.
+    ##   using a Wald t-distribution approximation.
 
 ``` r
 # categorical
 mod_BIDS_class<-lmer(fixation_prediction~BDI_class*trial_n_block_c +
                   (1|participant), 
-                data=all_data_et[all_data_et$trial_n_block<10,])
+                data=all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',])
 
 model_parameters(mod_BIDS_class)
 ```
@@ -322,42 +354,42 @@ model_parameters(mod_BIDS_class)
 
     ## # Fixed Effects
     ## 
-    ## Parameter                              | Coefficient |    SE |            95% CI | t(308) |     p
+    ## Parameter                              | Coefficient |    SE |            95% CI | t(340) |     p
     ## -------------------------------------------------------------------------------------------------
-    ## (Intercept)                            |      -71.62 | 53.25 | [-176.40,  33.16] |  -1.34 | 0.180
-    ## BDI class [moderate]                   |       50.33 | 95.00 | [-136.60, 237.26] |   0.53 | 0.597
-    ## BDI class [no]                         |       24.63 | 59.87 | [ -93.16, 142.43] |   0.41 | 0.681
-    ## trial n block c                        |      -72.11 | 34.90 | [-140.79,  -3.44] |  -2.07 | 0.040
-    ## BDI class [moderate] × trial n block c |       20.05 | 62.99 | [-103.90, 144.01] |   0.32 | 0.750
-    ## BDI class [no] × trial n block c       |        8.86 | 39.19 | [ -68.26,  85.99] |   0.23 | 0.821
+    ## (Intercept)                            |      -31.11 | 42.93 | [-115.56,  53.33] |  -0.72 | 0.469
+    ## BDI class [moderate]                   |      -16.95 | 81.02 | [-176.33, 142.42] |  -0.21 | 0.834
+    ## BDI class [no]                         |      -15.71 | 48.69 | [-111.49,  80.07] |  -0.32 | 0.747
+    ## trial n block c                        |      -46.40 | 28.52 | [-102.49,   9.69] |  -1.63 | 0.105
+    ## BDI class [moderate] × trial n block c |      -22.96 | 54.26 | [-129.68,  83.77] |  -0.42 | 0.673
+    ## BDI class [no] × trial n block c       |      -16.75 | 32.27 | [ -80.23,  46.73] |  -0.52 | 0.604
     ## 
     ## # Random Effects
     ## 
     ## Parameter                   | Coefficient
     ## -----------------------------------------
-    ## SD (Intercept: participant) |       16.08
-    ## SD (Residual)               |       41.83
+    ## SD (Intercept: participant) |       16.00
+    ## SD (Residual)               |       40.75
 
     ## 
     ## Uncertainty intervals (equal-tailed) and p-values (two-tailed) computed
-    ##   using a Wald t-distribution approximation. Uncertainty intervals for
-    ##   random effect variances computed using a Wald z-distribution
-    ##   approximation.
+    ##   using a Wald t-distribution approximation.
 
 ``` r
 (anova(mod_BIDS_class))
 ```
 
-    ## Analysis of Variance Table
-    ##                           npar  Sum Sq Mean Sq F value
-    ## BDI_class                    2  2488.8  1244.4  0.7111
-    ## trial_n_block_c              1 31021.7 31021.7 17.7277
-    ## BDI_class:trial_n_block_c    2   188.4    94.2  0.0538
+    ## Type III Analysis of Variance Table with Satterthwaite's method
+    ##                            Sum Sq Mean Sq NumDF  DenDF F value   Pr(>F)   
+    ## BDI_class                   180.1    90.1     2 339.88  0.0542 0.947219   
+    ## trial_n_block_c           16755.3 16755.3     1 330.12 10.0888 0.001633 **
+    ## BDI_class:trial_n_block_c   517.4   258.7     2 330.20  0.1558 0.855807   
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 ``` r
 mod_SHAPS_class<-lmer(fixation_prediction~SHAPS_class*trial_n_block_c +
                        (1|participant), 
-                     data=all_data_et[all_data_et$trial_n_block<10,])
+                     data=all_data_et[all_data_et$trial_n_block<=10 & all_data_et$type!='singletons',])
 
 model_parameters(mod_SHAPS_class)
 ```
@@ -367,34 +399,180 @@ model_parameters(mod_SHAPS_class)
 
     ## # Fixed Effects
     ## 
-    ## Parameter                          | Coefficient |    SE |            95% CI | t(310) |     p
+    ## Parameter                          | Coefficient |    SE |            95% CI | t(342) |     p
     ## ---------------------------------------------------------------------------------------------
-    ## (Intercept)                        |      -83.92 | 59.19 | [-200.39,  32.55] |  -1.42 | 0.157
-    ## SHAPS class [no]                   |       40.80 | 64.34 | [ -85.80, 167.40] |   0.63 | 0.526
-    ## trial n block c                    |      -89.54 | 39.11 | [-166.48, -12.59] |  -2.29 | 0.023
-    ## SHAPS class [no] × trial n block c |       30.14 | 42.42 | [ -53.33, 113.61] |   0.71 | 0.478
+    ## (Intercept)                        |      -59.98 | 49.48 | [-157.30,  37.34] |  -1.21 | 0.226
+    ## SHAPS class [no]                   |       19.20 | 53.78 | [ -86.58, 124.98] |   0.36 | 0.721
+    ## trial n block c                    |      -74.14 | 33.07 | [-139.19,  -9.10] |  -2.24 | 0.026
+    ## SHAPS class [no] × trial n block c |       16.23 | 35.87 | [ -54.32,  86.78] |   0.45 | 0.651
     ## 
     ## # Random Effects
     ## 
     ## Parameter                   | Coefficient
     ## -----------------------------------------
-    ## SD (Intercept: participant) |       16.56
-    ## SD (Residual)               |       41.72
+    ## SD (Intercept: participant) |       15.95
+    ## SD (Residual)               |       40.69
 
     ## 
     ## Uncertainty intervals (equal-tailed) and p-values (two-tailed) computed
-    ##   using a Wald t-distribution approximation. Uncertainty intervals for
-    ##   random effect variances computed using a Wald z-distribution
-    ##   approximation.
+    ##   using a Wald t-distribution approximation.
 
 ``` r
 anova(mod_SHAPS_class)
 ```
 
-    ## Analysis of Variance Table
-    ##                             npar  Sum Sq Mean Sq F value
-    ## SHAPS_class                    1   121.0   121.0  0.0695
-    ## trial_n_block_c                1 30966.8 30966.8 17.7893
-    ## SHAPS_class:trial_n_block_c    1   878.7   878.7  0.5048
+    ## Type III Analysis of Variance Table with Satterthwaite's method
+    ##                             Sum Sq Mean Sq NumDF  DenDF F value    Pr(>F)    
+    ## SHAPS_class                    211     211     1 343.04  0.1274 0.7213199    
+    ## trial_n_block_c              22446   22446     1 331.22 13.5547 0.0002705 ***
+    ## SHAPS_class:trial_n_block_c    339     339     1 331.22  0.2047 0.6512385    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 ### Median Split
+
+``` r
+# get the median of the BDI
+BDI_median<-median(quest$BDI_score)
+
+# assign participant to low depressive sympt or high depress sympt
+quest$BDI_split<-ifelse(quest$BDI_score < BDI_median, "Low_depr", "High_depr" )
+
+# check distr
+table(quest$BDI_split)
+```
+
+    ## 
+    ## High_depr  Low_depr 
+    ##        11         9
+
+``` r
+# assign it to the dataset
+all_data_et$BDI_split<-NA
+
+for (n in 1: nrow(all_data_et)){
+  if (any(quest$ID==all_data_et$participant[n])){
+  all_data_et$BDI_split[n]<-quest$BDI_split[quest$ID==all_data_et$participant[n]]
+  }
+}
+
+# plot
+ggplot(all_data_et[all_data_et$trial_n_block<=10,], aes( x=trial_n_block, y=fixation_prediction))+
+  geom_line(stat="smooth",method = "lm", formula=y~x, alpha=0.5, se=F)+
+  aes(colour = factor(participant))+
+  geom_smooth(method="lm",formula=y~x, se=T, colour = "black" )+
+  theme(strip.text.x = element_text(size = 13))+
+  theme_classic()+
+  theme(panel.spacing = unit(1, "lines"))+
+  facet_wrap(.~BDI_split)+
+  #ggtitle("Experiment 2")+
+  theme(legend.position = "none")
+```
+
+    ## Warning: Removed 119 rows containing non-finite values (`stat_smooth()`).
+    ## Removed 119 rows containing non-finite values (`stat_smooth()`).
+
+![](Analyses_script_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
+# analyze
+mod_median_split<-lmer(fixation_prediction~BDI_split*trial_n_block +
+                       (1+trial_n_block|participant), 
+                     data=all_data_et[all_data_et$trial_n_block<=10,])
+```
+
+    ## boundary (singular) fit: see help('isSingular')
+
+``` r
+summary(mod_median_split)
+```
+
+    ## Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+    ## lmerModLmerTest]
+    ## Formula: 
+    ## fixation_prediction ~ BDI_split * trial_n_block + (1 + trial_n_block |  
+    ##     participant)
+    ##    Data: all_data_et[all_data_et$trial_n_block <= 10, ]
+    ## 
+    ## REML criterion at convergence: 3569
+    ## 
+    ## Scaled residuals: 
+    ##     Min      1Q  Median      3Q     Max 
+    ## -1.6887 -0.7247 -0.1988  0.4548  2.9640 
+    ## 
+    ## Random effects:
+    ##  Groups      Name          Variance  Std.Dev. Corr
+    ##  participant (Intercept)    128.8783 11.3525      
+    ##              trial_n_block    0.7541  0.8684  1.00
+    ##  Residual                  1647.3799 40.5879      
+    ## Number of obs: 348, groups:  participant, 15
+    ## 
+    ## Fixed effects:
+    ##                                 Estimate Std. Error     df t value Pr(>|t|)    
+    ## (Intercept)                       60.512      7.831 23.588   7.728 6.52e-08 ***
+    ## BDI_splitLow_depr                  8.658     11.258 22.241   0.769  0.44993    
+    ## trial_n_block                     -2.999      1.108 59.455  -2.707  0.00884 ** 
+    ## BDI_splitLow_depr:trial_n_block   -1.099      1.605 57.086  -0.685  0.49614    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Correlation of Fixed Effects:
+    ##             (Intr) BDI_sL_ trl_n_
+    ## BDI_spltLw_ -0.696               
+    ## tril_n_blck -0.589  0.410        
+    ## BDI_spL_:__  0.407 -0.579  -0.690
+    ## optimizer (nloptwrap) convergence code: 0 (OK)
+    ## boundary (singular) fit: see help('isSingular')
+
+``` r
+model_parameters(mod_median_split)
+```
+
+    ## Package 'merDeriv' needs to be installed to compute confidence intervals
+    ##   for random effect parameters.
+
+    ## # Fixed Effects
+    ## 
+    ## Parameter                            | Coefficient |    SE |          95% CI | t(340) |      p
+    ## ----------------------------------------------------------------------------------------------
+    ## (Intercept)                          |       60.51 |  7.83 | [ 45.11, 75.91] |   7.73 | < .001
+    ## BDI split [Low_depr]                 |        8.66 | 11.26 | [-13.49, 30.80] |   0.77 | 0.442 
+    ## trial n block                        |       -3.00 |  1.11 | [ -5.18, -0.82] |  -2.71 | 0.007 
+    ## BDI split [Low_depr] × trial n block |       -1.10 |  1.61 | [ -4.26,  2.06] |  -0.68 | 0.494 
+    ## 
+    ## # Random Effects
+    ## 
+    ## Parameter                                  | Coefficient
+    ## --------------------------------------------------------
+    ## SD (Intercept: participant)                |       11.35
+    ## SD (trial_n_block: participant)            |        0.87
+    ## Cor (Intercept~trial_n_block: participant) |        1.00
+    ## SD (Residual)                              |       40.59
+
+    ## 
+    ## Uncertainty intervals (equal-tailed) and p-values (two-tailed) computed
+    ##   using a Wald t-distribution approximation.
+
+``` r
+# print the long dataset for the first 10 trials
+write.csv(all_data_et[all_data_et$trial_n_block<=10,], "output_files/et_data_first10.csv", row.names =F)
+
+# extract coefficients
+rand_eff<-ranef(mod_median_split)
+
+# trialNestrimates
+coeff<-rand_eff$participant$trial_n_block_c
+
+# part id
+ID<-unique(all_data_et$participant[!is.na(all_data_et$BDI_split)])
+
+# create the aggregated dataset
+aggr_data<-as.data.frame(cbind(ID, coeff))
+
+# add BDI_split
+aggr_data$BDI_split<-NA
+
+for (n in 1: nrow(aggr_data)){
+  aggr_data$BDI_split[n]<-quest$BDI_split[quest$ID==aggr_data$ID[n]]
+}
+```
